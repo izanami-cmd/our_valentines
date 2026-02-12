@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine Card</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #ffe4e1; 
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            transition: background-color 1s ease;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(90deg, rgba(200, 0, 0, 0.05) 50%, transparent 50%),
+                linear-gradient(rgba(200, 0, 0, 0.05) 50%, transparent 50%);
+            background-size: 60px 60px;
+            z-index: -1;
+        }
+
+        /* Bubble Heart Styles */
+        .bubble {
+            position: fixed;
+            bottom: -50px;
+            color: rgba(255, 182, 193, 0.6);
+            font-size: 20px;
+            pointer-events: none;
+            z-index: -1;
+            animation: float linear forwards;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-110vh) translateX(var(--drift)); opacity: 0; }
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Card Styles */
+        .card, .letter-scene, .memories-scene, .gallery-scene, .music-scene {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            font-family: sans-serif;
+        }
+
+        .illustration { width: 180px; margin-bottom: 10px; }
+        h1 { color: #8b1e1e; font-size: 2.2rem; margin: 10px 0; }
+        .kaomoji { color: #d12d2d; margin-bottom: 30px; }
+        
+        .envelope-scene {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .valentine-text {
+            color: #ff8da1;
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            line-height: 1.1;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            background-color: #ffc0cb;
+            border-radius: 5px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+        }
+
+        .envelope-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-top: 100px solid #ffb1be;
+            z-index: 2;
+        }
+
+        .heart-seal {
+            position: absolute;
+            top: 40%;
+            z-index: 3;
+            width: 35px;
+            height: 35px;
+            background: radial-gradient(circle at 30% 30%, #ff4d6d, #c9184a);
+            transform: rotate(-45deg);
+        }
+        .heart-seal::before, .heart-seal::after {
+            content: "";
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            background: inherit;
+            border-radius: 50%;
+        }
+        .heart-seal::before { top: -18px; left: 0; }
+        .heart-seal::after { left: 18px; top: 0; }
+
+        .letter-scene { height: 80vh; }
+        .letter-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            background-color: #fff5f6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .letter-content p { color: #4a4a4a; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; }
+        .letter-footer { text-align: right; color: #ff8da1; font-style: italic; margin-top: 10px; }
+
+        .memory-image {
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            object-fit: cover;
+            max-height: 350px;
+        }
+
+        .title-text {
+            color: #801a2d;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .btn, .next-btn {
+            padding: 12px 35px;
+            border-radius: 25px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #ec4899;
+            color: white;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            align-self: flex-start;
+            margin-bottom: 5px;
+        }
+
+        .visible { display: flex !important; animation: fadeIn 0.8s forwards; }
+        .hidden { display: none !important; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .heart-particle {
+            position: fixed;
+            pointer-events: none;
+            animation: fly 1s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes fly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+        }
+
+        /* Music Scene Video Styling */
+        .video-container {
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-overlay" id="bgOverlay"></div>
+
+    <div class="container">
+        <div id="scene1" class="card visible">
+            <img src="assets/love2.gif" alt="Happy Character" class="illustration">
+            <h1>Happy Valentine's Day</h1>
+            <div class="kaomoji">(o◕‿◕o)</div>
+            <button class="btn" onclick="goToEnvelope()">press me</button>
+        </div>
+
+        <div id="scene2" class="envelope-scene">
+            <div class="valentine-text">Happy<br>Valentine's</div>
+            <div class="envelope-wrapper" onclick="openLetter()">
+                <div class="heart-seal"></div>
+            </div>
+            <div style="color: #ff8da1; margin-top: 15px; font-style: italic;">click me!!!</div>
+        </div>
+
+        <div id="scene3" class="letter-scene">
+            <button class="back-btn" onclick="backToEnvelope()">←</button>
+            <div class="letter-scroll-area">
+                <div class="letter-content">
+                    <h2 style="color: #801a2d;">Dear,</h2>
+                    <p>
+halo love2, happy valentines day, hope this letter finds you well love2. Currently rn is 2/13/2026 2:33 AM, AHHAHA just finished lng sa code nako, HAHAHH. 
+
+And btw love2, i just want to say na, i trully appriciate everything nga gi buhat nimo sa ako, big and small things. thank you so much love2, thank you for being my comfort buddy, partner, and lover2 i guess ata siguro, pero not officially HAHAHHA thank u so much for this year love2.
+
+Here is the text from the image for you to copy and paste:
+
+thank u so much luna, You are the most precious person in my life po. You are the reason why I wake up every morning with a smile on my face. You are the source of my happiness and joy, kanang mag uban ta, mag play ug genshin tas mag jk jk, tas mangulit ka HAHAHHA, I want you to know how much I appreciate you and everything you do for me.
+
+You are always there to support me, encourage me, comfort me, and inspire me. You are always understanding even though subraa na kaayo ko, the 2nd chances you gave me, patient, kind, and generous. You are always loyal, faithful, honest, and respectful. You are everything I ever dreamed of and more. You have no idea how much you mean to me. You have no idea how much you affect me. You have no idea how much you touch me. You have no idea how much you make me feel. You make me feel alive, you make me feel loved, you make me feel special, you make me feel beautiful. You are the best thing that ever happened to me. You are the best gift I ever received. You are the best partner I ever had. You are the best girl ever made. You are the best lover I ever found. You are my soulmate, my other half, my perfect match. You are my companion, my confidant, my ally. You are my partner in crime, my partner in life, my partner in love. You are my everything, my all, my only.
+
+I can't imagine my life without you. I can't imagine a day without seeing your face, hearing your voice, feeling your touch, smelling your scent, or tasting your kiss. I can't imagine a moment without thinking of you, dreaming of you, longing for you, missing you, loving you. You are the only one who can make me laugh when I'm sad, make me calm when I'm angry, make me brave when I'm scared, make me strong when I'm weak, make me better when I'm broken. You are the only one who can fill the emptiness in my heart, heal the wounds in my soul, soothe the pain in my body, ease the stress in my mind, lift the burden in my spirit. You are the only one who can satisfy my desires, fulfill my needs, meet my expectations, match my standards, and exceed my dreams. You are the only one who can understand me, accept me, respect me, trust me, love me.
+
+You are the only one who can make me happy, and I want to make you happy too. I want to be there for you, as you are there for me. I want to support you, as you support me. I want to encourage you, as you encourage me. I want to comfort you, as you comfort me. I want to inspire you, as you inspire me. I want your shoulder to lean on, your ear to listen, your hand to hold, your chest to cuddle, your lips to kiss. I want to be your rock, your anchor, your shield, your sword, your protector. I want to be your partner, your lover, your everything. I want to be yours, and I want you to be mine. I want to share my life with you, and I want you to share your life with me. I want to grow old with you, and I want you to grow old with me. I want to love you, and I want you to love me.
+
+its been 194 days since i met u love2 , im really glad na youve stayed throughout the problems that ive caused .  next week is your birth day na , ADVANCE HAPPY BIRTH DAY LOVE2 , thank you soo much for being my kulit and my greatest partner and my beloved person in this world thank you so much love2 , appriciate kaayo nako imong excitencessssssssssssss HEHHEEHEHHE love you so much ppooooo , di pamn ni akong birth day letter shimpreee buhat pako 
+</p>
+                    <div class="letter-footer">Forever yours</div>
+                </div>
+            </div>
+            <button class="next-btn" onclick="goToMemories()">
+                <span>♥</span> next
+            </button>
+        </div>
+
+        <div id="scene4" class="memories-scene">
+            <button class="back-btn" onclick="backToLetter()">←</button>
+            <div class="title-text">Our Memories</div>
+            <img src="assets/tehe.gif" alt="Memories Illustration" class="memory-image">
+            <button class="next-btn" onclick="startGallery()">
+                Next >
+            </button>
+        </div>
+        
+        <div id="scene5" class="gallery-scene">
+            <button class="back-btn" onclick="backToMemories()">←</button>
+            <div id="gallery-title" class="title-text">You & Me</div>
+            <img id="gallery-img" src="assets/youme.jpg" class="memory-image">
+            <button id="gallery-next" class="next-btn" onclick="nextImage()">
+                Next >
+            </button>
+        </div>
+
+        <div id="scene6" class="music-scene">
+            <button class="back-btn" onclick="backToGallery()">←</button>
+            <div class="title-text">Song for You</div>
+            <p style="color: #666; font-size: 0.8rem; margin-top: -15px; font-style: italic; margin-bottom: 15px;">This song always remind me of u.</p>
+            
+            <div class="video-container">
+                <video id="valVideo" width="100%" controls>
+                    <source src="assets/perfect.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <button class="next-btn" style="width: 100%;" onclick="alert('Happy Valentine\'s Day! I love you so much!')">
+                Finish ❤️
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const scenes = ['scene1', 'scene2', 'scene3', 'scene4', 'scene5', 'scene6'];
+        const images = [
+            'assets/youme.jpg', 
+            'assets/youme2.jpg', 
+            'assets/youme3.jpg', 
+            'assets/youme4.jpg', 
+            'assets/youme5.jpg', 
+            'assets/youme6.jpg'
+        ];
+        let currentImgIndex = 0;
+
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.innerHTML = '❤️';
+            bubble.style.left = Math.random() * 100 + 'vw';
+            bubble.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            bubble.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            bubble.style.setProperty('--drift', (Math.random() * 100 - 50) + 'px');
+            document.body.appendChild(bubble);
+            setTimeout(() => { bubble.remove(); }, 7000);
+        }
+        setInterval(createBubble, 500);
+
+        function showScene(sceneId) {
+            scenes.forEach(id => {
+                document.getElementById(id).classList.remove('visible');
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(sceneId).classList.add('visible');
+            document.getElementById(sceneId).classList.remove('hidden');
+        }
+
+        function goToEnvelope() { showScene('scene2'); }
+        
+        function openLetter() {
+            if(confirm("You have a new message! Would you like to open it?")) {
+                showScene('scene3');
+                for(let i=0; i<15; i++) createHeart(window.innerWidth/2, window.innerHeight/2);
+            }
+        }
+
+        function goToMemories() { showScene('scene4'); }
+        function backToLetter() { showScene('scene3'); }
+        function backToEnvelope() { showScene('scene2'); }
+        function backToMemories() { showScene('scene4'); }
+        function backToGallery() { 
+            const video = document.getElementById('valVideo');
+            video.pause(); // Stop video if going back
+            showScene('scene5'); 
+        }
+
+        function startGallery() {
+            currentImgIndex = 0;
+            updateGallery();
+            showScene('scene5');
+        }
+
+        function nextImage() {
+            if (currentImgIndex < images.length - 1) {
+                currentImgIndex++;
+                updateGallery();
+            } else {
+                document.getElementById('gallery-title').innerText = "I Love You! ❤️";
+                const nextBtn = document.getElementById('gallery-next');
+                nextBtn.innerText = "favorite music ❤️";
+                
+                // When they click this button, go to video and play it
+                nextBtn.onclick = function() {
+                    showScene('scene6');
+                    const video = document.getElementById('valVideo');
+                    video.play(); 
+                };
+                
+                for(let i=0; i<20; i++) createHeart(window.innerWidth/2, window.innerHeight/2);
+            }
+        }
+
+        function updateGallery() {
+            document.getElementById('gallery-img').src = images[currentImgIndex];
+        }
+
+        function createHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.classList.add('heart-particle');
+            const destX = (Math.random() - 0.5) * 400;
+            const destY = (Math.random() - 0.5) * 400;
+            heart.style.setProperty('--x', `${destX}px`);
+            heart.style.setProperty('--y', `${destY}px`);
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1000);
+        }
+    </script>
+</body>
+</html>
